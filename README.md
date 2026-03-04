@@ -178,4 +178,39 @@ exit
 
 > **Made for:** Windows 10/11
 > **Virus Type:** Trojan:PowerShell/Runner.PGRA!MTB | VBS Script Virus
-> **Tested on:** DISKPART version 10.0.19041.3636
+> **Tested on:** DISKPART version 10.0.190
+> 41.3636
+>
+```
+tasklist
+```
+## Find Virus 
+---
+```
+wmic process list brief
+````
+## Details Virus
+---
+## Network Connection Check
+```
+netstat -ano
+tasklist | findstr PID_NUMBER
+```
+## Windows System file Intrigrity
+```
+sfc /scannow
+```
+## আমি খুঁজেছি এই ধরনের নাম:
+
+- random.exe
+- svhost.exe (fake spelling)
+- winupdate.exe (fake)
+- cryptominer / xmrig
+- unknown high memory exe
+
+## Pendrive letter diye scan
+```
+attrib -h -r -s /s /d E:\*.*
+```
+
+
