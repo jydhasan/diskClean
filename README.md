@@ -665,5 +665,12 @@ Write-Host "Scan saved to: $output" -ForegroundColor Green
 
 ---
 *এই ডকুমেন্টেশন শুধুমাত্র নিরাপত্তা বিশ্লেষণের শিক্ষামূলক উদ্দেশ্যে তৈরি।*
+## Rootkit Check 
+```
+Get-WmiObject Win32_SystemDriver | Where-Object {$_.PathName -notmatch "Windows\\System32"}
 
+Get-CimInstance Win32_Process | Where-Object {$_.ExecutablePath -notmatch "Windows" -and $_.ExecutablePath -match "Temp|AppData|ProgramData"} | Format-Table Name, ProcessI, ExecutablePath -AutoSize
+
+netstat -abon
+```
 
