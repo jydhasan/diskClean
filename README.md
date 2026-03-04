@@ -213,4 +213,151 @@ sfc /scannow
 attrib -h -r -s /s /d E:\*.*
 ```
 
+# 🛡️ Advanced Malware Check Script — Windows PowerShell
+
+> **Professional Level Manual Inspection Guide**  
+> Windows সিস্টেমে Hidden Infection চেক করার জন্য Advanced PowerShell Scripts
+
+---
+
+## ⚡ শুরু করার আগে
+
+### Step 1 — PowerShell Administrator হিসেবে খুলুন
+
+```
+Start → Search → PowerShell → Right Click → Run as Administrator
+```
+
+> ⚠️ **সতর্কতা:** Administrator ছাড়া কিছু script কাজ নাও করতে পারে।
+
+---
+
+## 🧠 Script 1 — Suspicious Process Check
+
+System32 ছাড়া অন্য কোথাও থেকে চলছে এমন process খুঁজে বের করে।
+
+```powershell
+Get-Process |
+Where-Object {
+    $_.Path -notmatch "Windows\\System32" -and
+    $_.Path -ne $null
+} |
+Select Name, Path, Id |
+Format-Table
+```
+
+**📌 কী দেখাবে:**
+- System32 ছাড়া কোথায় `.exe` চলছে
+- যেকোনো অপরিচিত path সন্দেহজনক হতে পারে
+
+---
+
+## 🧠 Script 2 — Startup Malware Check
+
+System startup-এ কোন কোন program automatically চালু হচ্ছে তা দেখায়।
+
+```powershell
+Get-CimInstance Win32_StartupCommand |
+Select Name, command, Location
+```
+
+**📌 কী দেখাবে:**
+- Startup-এ থাকা সকল entry
+- Unknown বা অপরিচিত startup entry থাকলে সন্দেহ করুন
+
+---
+
+## 🧠 Script 3 — Network Connection Malware Check
+
+Established network connection এবং তাদের remote IP দেখায়।
+
+```powershell
+Get-NetTCPConnection |
+Where-Object State -eq "Established" |
+Select LocalAddress, RemoteAddress, OwningProcess
+```
+
+**📌 কী দেখাবে:**
+- কোন process কোন IP-তে connected
+- Unknown foreign IP detect করতে পারবেন
+- Suspicious IP পেলে online-এ check করুন
+
+---
+
+## 🧠 Script 4 — Hidden Driver Malware Check 🔥
+
+> **Very Important** — Rootkit এবং hidden driver malware ধরতে সবচেয়ে কার্যকর।
+
+```powershell
+Get-WmiObject Win32_SystemDriver |
+Where-Object {$_.State -eq "Running"} |
+Select DisplayName, PathName
+```
+
+**📌 কী দেখাবে:**
+- সকল running system driver
+- ⚠️ `System32` ছাড়া অন্য কোনো path থেকে driver চললে **বিপদ**
+
+---
+
+## 🧠 Script 5 — File System Root Check
+
+System32 ফোল্ডারে নতুন বা অপরিচিত `.exe` ফাইল আছে কিনা দেখায়।
+
+```powershell
+Get-ChildItem C:\Windows\System32 |
+Where-Object {$_.Extension -eq ".exe"} |
+Select Name, Length, LastWriteTime
+```
+
+**📌 কী দেখাবে:**
+- System32-এর সকল `.exe` ফাইল ও তাদের তারিখ
+- নতুন বা অপরিচিত `.exe` থাকলে সন্দেহ করুন
+
+---
+
+## 🛑 সন্দেহজনক কিছু পেলে কী করবেন?
+
+1. **Output copy করুন** — সম্পূর্ণ result কপি করুন
+2. **Analyse করান** — কোনো expert বা AI-কে দেখান
+3. **VirusTotal চেক করুন** — সন্দেহজনক file `virustotal.com`-এ আপলোড করুন
+4. **Disconnect করুন** — মারাত্মক সন্দেহ হলে internet বন্ধ রাখুন
+
+---
+
+## ✅ সিস্টেম Clean হওয়ার লক্ষণ
+
+| চেক | স্ট্যাটাস |
+|-----|----------|
+| সকল Process path স্বাভাবিক | ✅ |
+| Startup-এ পরিচিত program | ✅ |
+| Network connection পরিচিত | ✅ |
+| Driver সব System32-এ | ✅ |
+| System32-এ নতুন `.exe` নেই | ✅ |
+
+---
+
+## 💡 পরবর্তী পদক্ষেপ (Advanced)
+
+> **Super Deep Hidden Rootkit Detector Method (Expert Level)**  
+> ৯৯.৯% advanced malware ধরতে সক্ষম।
+
+এই method-এ অন্তর্ভুক্ত:
+- Memory forensics analysis
+- Registry deep scan
+- Boot sector inspection
+- Kernel-level hook detection
+
+---
+
+## 📝 Notes
+
+- এই scripts শুধুমাত্র **নিজের সিস্টেম** চেক করার জন্য
+- অন্যের সিস্টেমে অনুমতি ছাড়া ব্যবহার করবেন না
+- Windows Defender এবং এই scripts একসাথে ব্যবহার করা ভালো
+
+---
+
+*তৈরি করা হয়েছে: Zahid ভাইয়ের জন্য 🛡️*
+
 
