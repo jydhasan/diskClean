@@ -674,3 +674,401 @@ Get-CimInstance Win32_Process | Where-Object {$_.ExecutablePath -notmatch "Windo
 netstat -abon
 ```
 
+# New
+নিচে আমি **Windows-এ PowerShell ব্যবহার করে basic forensic / security check** করার কিছু ধাপ দেখাচ্ছি। এগুলো মূলত **detection / investigation** এর জন্য — ১০০% নিশ্চিতভাবে rootkit বা keylogger ধরা সবসময় সম্ভব না, কিন্তু এগুলো দিয়ে অনেক suspicious জিনিস ধরা যায়।
+
+---
+
+# 1️⃣ Rootkit detect (System integrity check)
+
+Rootkit সাধারণত **system file modify** করে। তাই প্রথমে Windows system file verify করা হয়।
+
+### Step 1: System File Checker
+
+PowerShell (Admin) এ run করুন:
+
+```
+sfc /scannow
+```
+
+এটা Windows system file scan করবে এবং corrupted file repair করবে।
+
+---
+
+### Step 2: DISM health check
+
+```
+DISM /Online /Cleanup-Image /CheckHealth
+```
+
+আরো deep scan:
+
+```
+DISM /Online /Cleanup-Image /RestoreHealth
+```
+
+---
+
+### Step 3: Hidden driver check
+
+Rootkit অনেক সময় driver হিসেবে লুকিয়ে থাকে।
+
+```
+driverquery
+```
+
+আরো detail:
+
+```
+driverquery /v
+```
+
+Suspicious driver location খুঁজবেন:
+
+```
+C:\Temp
+C:\Users
+AppData
+```
+
+Normal driver সাধারণত থাকে:
+
+```
+C:\Windows\System32\drivers
+```
+
+---
+
+# 2️⃣ Keylogger detect
+
+Keylogger সাধারণত **startup program বা background process** হিসেবে থাকে।
+
+### Step 1: Startup program check
+
+```
+wmic startup get caption,command
+```
+
+PowerShell version:
+
+```
+Get-CimInstance Win32_StartupCommand
+```
+
+এখানে দেখবেন unknown program আছে কিনা।
+
+---
+
+### Step 2: Keyboard hook program detect
+
+Running process দেখুন:
+
+```
+Get-Process
+```
+
+Suspicious নাম খুঁজুন যেমন:
+
+* keylogger
+* monitor
+* spy
+* hook
+
+---
+
+### Step 3: Installed program check
+
+```
+Get-WmiObject -Class Win32_Product
+```
+
+---
+
+# 3️⃣ Reverse shell detect
+
+Reverse shell হলে attacker এর server এ connection থাকে।
+
+### Step 1: Active network connection
+
+```
+netstat -ano
+```
+
+দেখবেন:
+
+```
+ESTABLISHED
+LISTENING
+```
+
+---
+
+### Step 2: Suspicious connection filter
+
+```
+netstat -ano | findstr ESTABLISHED
+```
+
+তারপর PID দিয়ে process বের করুন:
+
+```
+tasklist | findstr PID_NUMBER
+```
+
+---
+
+### Step 3: PowerShell network process
+
+```
+Get-NetTCPConnection
+```
+
+---
+
+# 4️⃣ Network sniffing detect
+
+Packet sniffer থাকলে network adapter **promiscuous mode** এ যেতে পারে।
+
+### Step 1: Network adapter check
+
+```
+Get-NetAdapter
+```
+
+---
+
+### Step 2: Running capture tool check
+
+```
+tasklist
+```
+
+Sniffer software খুঁজবেন:
+
+* Wireshark
+* tcpdump
+* npcap
+* sniff
+
+---
+
+### Step 3: Listening port check
+
+```
+netstat -abno
+```
+
+যদি unknown program port open করে থাকে তাহলে suspicious।
+
+---
+
+# 🔎 Extra forensic command (very useful)
+
+### Running scheduled tasks
+
+```
+schtasks /query /fo LIST /v
+```
+
+Malware অনেক সময় scheduled task ব্যবহার করে।
+
+---
+
+### Services check
+
+```
+Get-Service
+```
+
+Unknown service খুঁজবেন।
+
+---
+
+# ⚠️ Important
+
+এই command গুলো **basic forensic analysis**।
+কিন্তু advanced malware detect করতে tools লাগে যেমন:
+
+* **Microsoft Sysinternals Autoruns**
+* **Process Explorer**
+* **TCPView**
+* **GMER rootkit scanner**
+
+---
+
+✅ আপনার আগের process list দেখে **কোন suspicious sign পাইনি**।
+
+---
+
+👍 আপনি যেহেতু Kali Linux ও security নিয়ে কাজ করছেন, চাইলে আমি আপনাকে দেখাতে পারি:
+
+**Windows-এ সবচেয়ে dangerous hidden malware detect করার ৩টা advanced technique**
+
+যেগুলো অনেক ethical hackerও জানে না।
+
+Windows-এ **advanced malware detection** করা সাধারণত forensic analysts ও incident responders করে। নিচে আমি **৩টি advanced technique** দেখাচ্ছি যেগুলো Windows security investigation-এ খুব ব্যবহার হয়। এগুলো mainly **analysis / detection** এর জন্য।
+
+---
+
+# 1️⃣ Autoruns দিয়ে hidden persistence detect
+
+অনেক malware **startup, service, scheduled task, browser plugin** হিসেবে লুকিয়ে থাকে। এগুলো detect করার জন্য সবচেয়ে powerful tool হলো **Autoruns** (Microsoft Sysinternals suite)।
+
+### Step-by-step
+
+1️⃣ Autoruns download করুন
+
+* [https://learn.microsoft.com/sysinternals/downloads/autoruns](https://learn.microsoft.com/sysinternals/downloads/autoruns)
+
+2️⃣ Zip extract করে **Autoruns64.exe** run করুন (Admin)
+
+3️⃣ Menu থেকে:
+
+```
+Options → Hide Microsoft Entries
+```
+
+এতে শুধু **third-party entries** দেখা যাবে।
+
+4️⃣ এখন check করুন:
+
+* Logon
+* Services
+* Drivers
+* Scheduled Tasks
+* AppInit
+* Winsock Providers
+
+⚠️ Suspicious হলে সাধারণত দেখা যায়:
+
+```
+C:\Users\...\AppData\Roaming\something.exe
+C:\Temp\malware.exe
+```
+
+Normal system file থাকে:
+
+```
+C:\Windows\System32\
+C:\Program Files\
+```
+
+---
+
+# 2️⃣ Process Explorer + VirusTotal analysis
+
+Running process analyse করার জন্য সবচেয়ে powerful tool হলো
+**Process Explorer**।
+
+### Step-by-step
+
+1️⃣ Download:
+
+[https://learn.microsoft.com/sysinternals/downloads/process-explorer](https://learn.microsoft.com/sysinternals/downloads/process-explorer)
+
+2️⃣ Run **procexp64.exe**
+
+3️⃣ Menu:
+
+```
+Options → VirusTotal → Check VirusTotal.com
+```
+
+এখন প্রতিটা process এর পাশে score দেখাবে:
+
+```
+0/75  → safe
+10/75 → suspicious
+40/75 → malware
+```
+
+4️⃣ Suspicious process হলে:
+
+Right click → **Properties**
+
+দেখবেন:
+
+* Path
+* Command line
+* Network connection
+* Loaded DLL
+
+---
+
+# 3️⃣ TCPView দিয়ে hidden network connection detect
+
+অনেক malware **reverse shell / C2 server** এর সাথে connect করে।
+
+এটা detect করতে use হয় **TCPView**।
+
+### Step-by-step
+
+1️⃣ Download:
+
+[https://learn.microsoft.com/sysinternals/downloads/tcpview](https://learn.microsoft.com/sysinternals/downloads/tcpview)
+
+2️⃣ Run **tcpview.exe**
+
+এখানে real-time network connection দেখাবে:
+
+```
+Process        Local Address        Remote Address
+chrome.exe     192.168.1.5          142.250.182.206
+```
+
+⚠️ Suspicious sign:
+
+* Unknown process
+* Strange foreign IP
+* Random high port
+
+Right click → **Whois**
+
+এতে IP owner দেখা যায়।
+
+---
+
+# 🔎 Bonus forensic check
+
+PowerShell দিয়ে **suspicious scheduled tasks**:
+
+```
+Get-ScheduledTask | Where-Object {$_.State -eq "Ready"}
+```
+
+Service check:
+
+```
+Get-Service | Where-Object {$_.Status -eq "Running"}
+```
+
+---
+
+# ⚠️ Reality check
+
+Modern malware অনেক সময় detect করা কঠিন কারণ:
+
+* Rootkit
+* Kernel driver
+* Memory-only malware
+
+এগুলো detect করতে professional tools লাগে:
+
+* **GMER**
+* **Volatility**
+* **Kaspersky TDSSKiller**
+
+---
+
+✅ আপনার আগের process list দেখে এখন পর্যন্ত **malware sign পাইনি**।
+
+---
+
+যেহেতু আপনি Kali Linux ও cyber security নিয়ে কাজ করছেন, চাইলে আমি আপনাকে দেখাতে পারি:
+
+* **Windows-এ hackerরা কীভাবে hidden backdoor install করে**
+* **এবং defender কীভাবে সেটা detect করে**
+
+এটা খুব interesting cyber security topic। 😈
+
+
