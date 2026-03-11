@@ -1071,4 +1071,146 @@ Modern malware অনেক সময় detect করা কঠিন কারণ
 
 এটা খুব interesting cyber security topic। 😈
 
+ঠিক আছে! আমি আপনাকে **Autoruns দিয়ে Windows 10-এ Trojan/Crypto malware 100% clean করার সম্পূর্ণ workflow** step by step diagramসহ দেখাচ্ছি। এটা follow করলে malware detect ও remove করা অনেক সহজ হবে।
+
+---
+
+# **Autoruns Workflow to Clean Trojan/Crypto Malware (Windows 10)**
+
+---
+
+## **Step 1: System কে Safe Mode-এ চালু করা**
+
+* Malware remove করার জন্য Safe Mode সবচেয়ে নিরাপদ।
+* **Steps:**
+
+  1. Start → Power → **Restart while holding Shift**
+  2. Troubleshoot → Advanced Options → Startup Settings → Restart
+  3. Safe Mode with Networking select করুন
+
+---
+
+## **Step 2: Autoruns খুলুন**
+
+* Autoruns download & unzip করুন: [Autoruns Sysinternals](https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns)
+* **Run as Administrator**
+* সব startup entries load হতে কিছু সময় নেবে
+
+---
+
+## **Step 3: Suspicious entries চিহ্নিত করা**
+
+**Autoruns Tabs focus করুন:**
+
+| Tab             | Suspicious entry চিহ্নিত করার guideline               |
+| --------------- | ----------------------------------------------------- |
+| Logon           | Random names, unknown publisher, temp folder path     |
+| Scheduled Tasks | Unknown tasks, recently created, no publisher         |
+| Services        | Unknown services, random names                        |
+| Drivers         | Unknown drivers, recently added, no digital signature |
+
+💡 Extra: **Options → Verify Code Signatures** enable করুন।
+Signed files normally safe, unsigned unknown files suspicious।
+
+---
+
+## **Step 4: Suspicious entry disable/remove**
+
+* Entry select করুন
+* **Right-click → Delete** (Permanent)
+* **Right-click → Uncheck** (Temporary disable)
+
+> Driver বা service remove করার আগে research করুন।
+
+---
+
+## **Step 5: Suspicious process kill করা (PowerShell / CMD)**
+
+* Autoruns-এ entry identify করার পরে, যদি process running থাকে kill করতে হবে
+
+**PowerShell:**
+
+```powershell
+# Replace evilprocess.exe with your suspicious process name
+Get-Process evilprocess | Stop-Process -Force
+```
+
+**CMD:**
+
+```cmd
+tasklist | findstr evilprocess.exe
+taskkill /F /IM evilprocess.exe
+```
+
+> Kill করার পরে, Autoruns থেকে entry delete না করলে reboot-এ আবার start হবে।
+
+---
+
+## **Step 6: Temporary files delete**
+
+* Windows + R → `%temp%` → Delete all files
+* C:\Windows\Temp\ সব temporary files clean করুন
+
+---
+
+## **Step 7: Post-cleanup Full Scan**
+
+* Windows Defender / Malwarebytes দিয়ে full scan চালান
+* নিশ্চিত হন সব malicious files quarantine/remove হয়েছে
+
+---
+
+## **Step 8: System Restore & Backup**
+
+* Clean System Restore point তৈরি করুন
+* Regular backup রাখুন
+
+---
+
+## **Step 9: Monitor CPU/GPU Usage**
+
+* Task Manager → Processes → High CPU/GPU suspicious programs check করুন
+* Crypto malware অনেক সময় mining করতে high GPU/CPU usage দেখায়
+
+---
+
+## **Flow Diagram**
+
+```
+[Boot Windows in Safe Mode]
+              |
+              v
+        [Run Autoruns as Admin]
+              |
+              v
+   [Identify Suspicious Entries]
+              |
+              v
+[Disable/Delete Entries & Kill Processes]
+              |
+              v
+   [Delete Temp Files & Browser Check]
+              |
+              v
+   [Full Scan: Defender / Malwarebytes]
+              |
+              v
+   [System Restore & Backup]
+              |
+              v
+[Monitor CPU/GPU & Reboot for Check]
+```
+
+---
+
+💡 **Tip:**
+Autoruns use করার সময় **step by step disable → reboot → check** approach ভালো। একবারে সব delete করলে system crash risk থাকে।
+
+---
+
+আপনি চাইলে আমি আপনাকে **এই পুরো workflow-এর জন্য Autoruns এর image/screenshots সহ visual step by step guide** বানিয়ে দিতে পারি, যেন সরাসরি follow করতে পারেন।
+
+আপনি কি চাইবেন আমি সেটা বানাই?
+
+
 
