@@ -1208,9 +1208,128 @@ Autoruns use করার সময় **step by step disable → reboot → check*
 
 ---
 
-আপনি চাইলে আমি আপনাকে **এই পুরো workflow-এর জন্য Autoruns এর image/screenshots সহ visual step by step guide** বানিয়ে দিতে পারি, যেন সরাসরি follow করতে পারেন।
+এবারের রিপোর্টটা **আগেরটার মতো harmless না** ❗
+👉 এখানে **real USB shortcut virus detect হয়েছে** — এটা clean করা দরকার।
 
-আপনি কি চাইবেন আমি সেটা বানাই?
+---
+
+## 🚨 Virus Details (তোমার report অনুযায়ী)
+
+Detected files:
+
+* `F:/sysvolume/u561052.bat`
+* `F:/sysvolume/u145106.vbs`
+* `F:/USB.lnk`
+
+👉 এগুলো typical **USB Shortcut Virus pattern**
+
+---
+
+## 🧠 USB Shortcut Virus কী করে?
+
+এই virus:
+
+* তোমার file/folder **hidden করে দেয়**
+* same name দিয়ে **shortcut (.lnk)** বানায়
+* click করলে:
+
+  * virus run হয়
+  * original file hidden থাকে
+
+📌 Example:
+
+* `Photos` folder → hidden
+* `Photos.lnk` → fake shortcut
+
+---
+
+## ⚠️ এটা dangerous কেন?
+
+* অন্য PC-তে ছড়ায় (USB দিয়ে)
+* auto run script চালায় (.bat / .vbs)
+* background এ malicious command execute করে
+
+---
+
+## ✅ এখন কী করতে হবে (Step-by-step fix)
+
+### 🔴 Step 1: USB disconnect করো
+
+👉 অন্য PC-তে লাগাইও না
+
+---
+
+### 🔵 Step 2: CMD দিয়ে clean করো
+
+1. **Command Prompt (Run as Admin)** খুলে নিচের command দাও:
+
+```id="3y5a7s"
+attrib -h -r -s /s /d F:\*.*
+```
+
+👉 এটা hidden file আবার visible করবে
+
+---
+
+### 🔵 Step 3: Virus file delete করো
+
+Manual delete:
+
+* `F:/sysvolume/` → পুরো folder delete করো
+* `F:/USB.lnk` → delete করো
+
+👉 যদি delete না হয়:
+
+```id="0i1tcc"
+del /f /a F:\*.lnk
+```
+
+---
+
+### 🔵 Step 4: Original file check করো
+
+👉 এখন তোমার আসল file/folder visible হবে
+(আগে hidden ছিল)
+
+---
+
+### 🔵 Step 5: Full scan দাও
+
+Use:
+
+* **Windows Defender**
+* অথবা Malwarebytes
+
+👉 Full scan (Quick না)
+
+---
+
+## 🛡️ Future protection
+
+### ✔️ USB use করার আগে:
+
+* Shift ধরে open করো (autorun block করে)
+
+### ✔️ Unknown PC-তে USB লাগানো avoid করো
+
+### ✔️ Important:
+
+👉 USB format করলে **100% clean হবে**
+
+---
+
+## 🎯 Final Verdict
+
+👉 এখনকার report:
+
+* ❗ Real virus (USB Shortcut Virus)
+* ✅ কিন্তু **easily removable**
+* 💥 system infect না, mainly USB drive-এ আছে
+
+---
+
+চাও হলে আমি তোমাকে **automatic one-click cleaner script (CMD)** বানিয়ে দিতে পারি — just run করলেই clean হয়ে যাবে 👍
+
 
 
 
